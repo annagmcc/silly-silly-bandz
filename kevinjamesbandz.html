@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kevin James Bandz</title>
+    <link href="stylesheet.css" rel="stylesheet">
+    <link rel="stylesheet" href="navigation.css">
+    <style>
+        body {
+            background: #111;
+            overflow: hidden;
+        }
+
+        #bubbleBox {
+            position: fixed;
+            z-index: 0;
+            inset: 0;
+            overflow: hidden;
+        }
+
+        .kevin-bouncer {
+            position: absolute;
+            width: 432px;
+            height: 432px;
+            object-fit: contain;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .resize-hint {
+            position: fixed;
+            z-index: 2;
+            inset: auto auto 15px 15px;
+            width: 290px;
+            height: 104px;
+            pointer-events: none;
+        }
+
+        .resize-hint__text {
+            position: absolute;
+            left: 4.25rem;
+            right: 80px;
+            bottom: 1.5rem;
+            max-width: calc(100vw - 5rem);
+            padding: 0.6rem 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.75);
+            background: rgba(0, 0, 0, 0.64);
+            color: white;
+            font: 14px/1.35 sans-serif;
+            text-align: center;
+        }
+
+        .resize-hint__arrow {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .resize-hint__arrow path {
+            fill: none;
+            stroke: white;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            marker-end: url(#resize-hint-arrowhead);
+        }
+    </style>
+    <script src="animation.js" defer></script>
+</head>
+<body>
+    <nav class="home-links" aria-label="Silly Bandz pages">
+        <a href="sillybandzhome.html">silly bandz home</a>
+        <a href="ogbandz.html">og bandz</a>
+        <a href="handbandz.html">hand bandz</a>
+        <a href="kevinjamesbandz.html" aria-current="page" class="active-inverse">kevin james bandz</a>
+        <a href="scribblebandz.html">scribble bandz</a>
+        <a href="memebandz.html">meme bandz</a>
+    </nav>
+    <main id="bubbleBox" aria-label="Bouncing Kevin James bandz"></main>
+    <aside class="resize-hint" aria-label="Adjust browser size to free or trap Kevin">
+        <svg class="resize-hint__arrow" viewBox="0 0 290 104" aria-hidden="true">
+            <defs>
+                <marker id="resize-hint-arrowhead" markerWidth="8" markerHeight="8"
+                        refX="6" refY="4" orient="auto">
+                    <path d="M1 1 L7 4 L1 7" fill="none" stroke="white"
+                          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    </path>
+                </marker>
+            </defs>
+            <path d="M 69 70 L 5 99"></path>
+        </svg>
+        <span class="resize-hint__text">adjust browser size to free/trap kevin</span>
+    </aside>
+</body>
+</html>
