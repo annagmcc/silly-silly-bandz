@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handbandz</title>
+    <link rel="stylesheet" href="navigation.css">
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            background: #111;
+        }
+
+        canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+    </style>
+</head>
+<body>
+    <nav class="home-links" aria-label="Silly Bandz pages">
+        <a href="sillybandzhome.html">silly bandz home</a>
+        <a href="ogbandz.html">og bandz</a>
+        <a href="handbandz.html" aria-current="page" class="active-inverse">hand bandz</a>
+        <a href="kevinjamesbandz.html">kevin james bandz</a>
+        <a href="scribblebandz.html">scribble bandz</a>
+        <a href="memebandz.html">meme bandz</a>
+    </nav>
+
+    <script type="module">
+        import {
+            Flowmap,
+            Geometry,
+            Mesh,
+            Program,
+            Renderer,
+            Texture,
+            Vec2,
+            Vec4
+        } from "https://cdn.jsdelivr.net/npm/ogl@1.0.11/+esm";
+
+        const sceneSize = 1200;
+        const handImages = [
+            "aqua", "blue", "dark blue", "green", "lime green",
+            "magenta", "orange", "pink", "purple", "yellow"
+        ].map(color => `images/hands/${color} hand.PNG`);
+        for (let index = handImages.length - 1; index > 0; index--) {
+            const swapIndex = Math.floor(Math.random() * (index + 1));
+            [handImages[index], handImages[swapIndex]] =
+                [handImages[swapIndex], handImages[index]];
+        }
+        const imageLayers = handImages.map((src, index) => ({
+            src,
+            x: Math.random() * 0.604,
+            y: Math.random() * 0.604,
+            width: 0.396,
+            height: 0.396
+        }));
+        const lessOverlapColors = ["blue hand.PNG", "dark blue hand.PNG", "lime green hand.PNG"];
+        const lessOverlapLayers = imageLayers.filter(layer =>
+            lessOverlapColors.some(color => layer.src.endsWith(color))
+        );
+        const overlapLayers = imageLayers.filter(layer =>
+            !lessOverlapLayers.includes(layer)
+        );
+        const imageOverlap = () => (5 + Math.random() * 5) / sceneSize;
+        const imageWidth = imageLayers[0].width;
+        const imageStep = overlap => imageWidth - overlap;
+        const clusterOrigin = (direction, step) => direction > 0
+            ? Math.random() * (1 - imageWidth - step)
+            : step + Math.random() * (1 - imageWidth - step);
+
+        const overlapX = imageOverlap();
+        const overlapY = imageOverlap();
+        const stepX = imageStep(overlapX);
+        const stepY = imageStep(overlapY);
+        const directionX = Math.random() < 0.5 ? -1 : 1;
+        const directionY = Math.random() < 0.5 ? -1 : 1;
+        const clusterX = clusterOrigin(directionX, stepX);
+        const clusterY = clusterOrigin(directionY, stepY);
+        overlapLayers[0].x = clusterX;
+        overlapLayers[0].y = clusterY;
+        overlapLayers[1].x = clusterX + directionX * stepX;
+        overlapLayers[1].y = clusterY + directionY * stepY;
+        overlapLayers[2].x = clusterX;
+        overlapLayers[2].y = clusterY + directionY * stepY;
+
+        const pairOverlap = imageOverlap();
+        const pairStep = imageStep(pairOverlap);
+        const pairDirection = Math.random() < 0.5 ? -1 : 1;
+        const pairX = clusterOrigin(pairDirection, pairStep);
+        const pairY = Math.random() * (1 - imageWidth);
+        overlapLayers[3].x = pairX;
+        overlapLayers[3].y = pairY;
+        overlapLayers[4].x = pairX + pairDirection * pairStep;
+        overlapLayers[4].y = pairY;
+
+        const soloSpots = [
+            [0.00, 0.02], [0.55, 0.08], [0.07, 0.55],
+            [0.49, 0.47], [0.30, 0.28]
+        ];
+        for (let index = soloSpots.length - 1; index > 0; index--) {
+            const swapIndex = Math.floor(Math.random() * (index + 1));
+            [soloSpots[index], soloSpots[swapIndex]] =
+                [soloSpots[swapIndex], soloSpots[index]];
+        }
+        for (let index = 0; index < soloSpots.length; index++) {
+            const layer = index < lessOverlapLayers.length
+                ? lessOverlapLayers[index]
+                : overlapLayers[index + 2];
+            layer.x = soloSpots[index][0] + (Math.random() - 0.5) * 0.04;
+            layer.y = soloSpots[index][1] + (Math.random() - 0.5) * 0.04;
+        }
+
+        const vertex = `
+            attribute vec2 uv;
+            attribute vec2 position;
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = vec4(position, 0.0, 1.0);
+            }
+        `;
+
+        const fragment = `
+            precision highp float;
+            uniform sampler2D tWater;
+            uniform sampler2D tFlow;
+            varying vec2 vUv;
+            uniform vec4 res;
+
+            void main() {
+                vec3 flow = texture2D(tFlow, vUv).rgb;
+                vec2 uv = gl_FragCoord.xy / res.xy;
+                vec2 myUV = (uv - vec2(0.5)) * res.zw + vec2(0.5);
+                myUV -= flow.xy * 0.105;
+                vec3 color = texture2D(tWater, myUV).rgb;
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `;
+
+        const renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio || 1, 2) });
+        const gl = renderer.gl;
+        document.body.appendChild(gl.canvas);
+
+        let aspect = 1;
+        const mouse = new Vec2(-1);
+        const velocity = new Vec2();
+        const flowmap = new Flowmap(gl);
+
+        const geometry = new Geometry(gl, {
+            position: {
+                size: 2,
+                data: new Float32Array([-1, -1, 3, -1, -1, 3])
+            },
+            uv: {
+                size: 2,
+                data: new Float32Array([0, 0, 2, 0, 0, 2])
+            }
+        });
+
+        const texture = new Texture(gl, {
+            minFilter: gl.LINEAR,
+            magFilter: gl.LINEAR
+        });
+        function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+                image.onload = () => resolve(image);
+                image.onerror = () => reject(new Error(`Could not load image: ${src}`));
+                image.src = src;
+            });
+        }
+
+        Promise.all(
+            imageLayers.map(async layer => ({
+                ...layer,
+                image: await loadImage(layer.src)
+            }))
+        ).then(layers => {
+            const scene = document.createElement("canvas");
+            scene.width = sceneSize;
+            scene.height = sceneSize;
+            const context = scene.getContext("2d");
+            context.fillStyle = "#111";
+            context.fillRect(0, 0, sceneSize, sceneSize);
+
+            for (const layer of layers) {
+                const boxX = layer.x * sceneSize;
+                const boxY = layer.y * sceneSize;
+                const boxWidth = layer.width * sceneSize;
+                const boxHeight = layer.height * sceneSize;
+                const scale = Math.min(
+                    boxWidth / layer.image.naturalWidth,
+                    boxHeight / layer.image.naturalHeight
+                );
+                const width = layer.image.naturalWidth * scale;
+                const height = layer.image.naturalHeight * scale;
+                context.drawImage(
+                    layer.image,
+                    boxX + (boxWidth - width) / 2,
+                    boxY + (boxHeight - height) / 2,
+                    width,
+                    height
+                );
+            }
+
+            texture.image = scene;
+        }).catch(error => {
+            console.error("Could not build the handbandz image scene.", error);
+        });
+
+        const imageAspect = 1;
+        let imageScaleX;
+        let imageScaleY;
+
+        function resize() {
+            const windowAspect = window.innerWidth / window.innerHeight;
+            if (window.innerHeight / window.innerWidth < imageAspect) {
+                imageScaleX = 1;
+                imageScaleY = window.innerHeight / window.innerWidth / imageAspect;
+            } else {
+                imageScaleX = windowAspect * imageAspect;
+                imageScaleY = 1;
+            }
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            aspect = windowAspect;
+            if (program) {
+                program.uniforms.res.value = new Vec4(
+                    gl.drawingBufferWidth,
+                    gl.drawingBufferHeight,
+                    imageScaleX,
+                    imageScaleY
+                );
+            }
+        }
+
+        const program = new Program(gl, {
+            vertex,
+            fragment,
+            uniforms: {
+                tWater: { value: texture },
+                res: {
+                    value: new Vec4(
+                        gl.drawingBufferWidth,
+                        gl.drawingBufferHeight,
+                        1,
+                        1
+                    )
+                },
+                tFlow: flowmap.uniform
+            }
+        });
+        const mesh = new Mesh(gl, { geometry, program });
+
+        function updatePointer(event) {
+            const bounds = gl.canvas.getBoundingClientRect();
+            const x = event.clientX - bounds.left;
+            const y = event.clientY - bounds.top;
+            const now = performance.now();
+
+            mouse.set(x / bounds.width, 1 - y / bounds.height);
+            if (updatePointer.lastTime !== undefined) {
+                const delta = Math.max(10, now - updatePointer.lastTime);
+                velocity.x = (x - updatePointer.lastX) / delta;
+                velocity.y = (y - updatePointer.lastY) / delta;
+                velocity.needsUpdate = true;
+            }
+            updatePointer.lastX = x;
+            updatePointer.lastY = y;
+            updatePointer.lastTime = now;
+        }
+
+        window.addEventListener("pointermove", updatePointer);
+        window.addEventListener("resize", resize);
+        resize();
+
+        function render() {
+            requestAnimationFrame(render);
+            if (!velocity.needsUpdate) {
+                mouse.set(-1);
+                velocity.set(0);
+            }
+            velocity.needsUpdate = false;
+            flowmap.aspect = aspect;
+            flowmap.mouse.copy(mouse);
+            flowmap.velocity.lerp(velocity, velocity.len ? 0.15 : 0.1);
+            flowmap.update();
+            renderer.render({ scene: mesh });
+        }
+
+        render();
+    </script>
+</body>
+</html>
