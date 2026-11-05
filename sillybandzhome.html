@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silly Bandz</title>
+    <link rel="stylesheet" href="navigation.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .title-slider {
+            --split: 50%;
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .title-panel {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+        }
+
+        .title-panel--glow {
+            background: #000;
+        }
+
+        .title-panel--plain {
+            width: var(--split);
+            overflow: hidden;
+            background: #fff;
+            z-index: 1;
+        }
+
+        .title-art {
+            width: min(90vw, 90vh);
+            height: min(90vw, 90vh);
+            object-fit: contain;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+
+        
+
+        .slider-control {
+            position: fixed;
+            z-index: 2;
+            left: 50%;
+            bottom: 1rem;
+            width: min(280px, 60vw);
+            transform: translateX(-50%);
+            accent-color: #777;
+            cursor: ew-resize;
+        }
+
+    </style>
+</head>
+<body>
+    <nav class="home-links" aria-label="Silly Bandz pages">
+        <a href="ogbandz.html">og bandz</a>
+        <a href="handbandz.html">hand bandz</a>
+        <a href="kevinjamesbandz.html">kevin james bandz</a>
+        <a href="scribblebandz.html">scribble bandz</a>
+        <a href="memebandz.html">meme bandz</a>
+    </nav>
+
+    <main class="title-slider" id="title-slider">
+        <div class="title-panel title-panel--glow">
+            <img class="title-art"
+                 src="silly bandz title/silly bandz glow title.PNG"
+                 alt="Silly Bandz glowing title on a black background">
+        </div>
+        <div class="title-panel title-panel--plain" id="left-side">
+            <img class="title-art"
+                 src="silly bandz title/silly bandz title page.PNG"
+                 alt="Silly Bandz title on a white background">
+        </div>
+    </main>
+
+    <input class="slider-control" id="title-slider-control" type="range"
+           min="0" max="100" value="50"
+           aria-label="Adjust the reveal between the white and black title designs">
+
+    <script>
+        const slider = document.getElementById("title-slider");
+        const control = document.getElementById("title-slider-control");
+
+        function setSplit(percent) {
+            const split = Math.max(0, Math.min(100, percent));
+            slider.style.setProperty("--split", `${split}%`);
+            control.value = String(split);
+        }
+
+        control.addEventListener("input", () => {
+            setSplit(Number(control.value));
+        });
+
+        slider.addEventListener("pointermove", event => {
+            if (event.pointerType === "mouse" && event.buttons === 0) {
+                setSplit(event.clientX / window.innerWidth * 100);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scribble Bandz</title>
+    <link rel="stylesheet" href="navigation.css">
+    <style>
+        .scribble {
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            clip-path: inset(5%);
+            display: block;
+            pointer-events: auto;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        .scribble-item {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+        }
+
+        .scribble-item.is-dragging {
+            cursor: grabbing;
+        }
+
+        .scribble-item[data-scribble="orange"] .scribble {
+            clip-path: inset(12.5% 17.5% 17.5%);
+        }
+
+        .scribble-item[data-scribble="yellow"] .scribble {
+            clip-path: inset(10% 5% 30% 12.5%);
+        }
+
+        .scribble-item[data-scribble="purple"] .scribble {
+            clip-path: inset(0 0 0 12.5%);
+        }
+
+        .scribble-item[data-scribble="blue"] .scribble {
+            clip-path: inset(17.5% 12.5%);
+        }
+
+        .scribble-item[data-scribble="other red"] .scribble {
+            clip-path: inset(17.5%);
+        }
+
+        .resize-handle {
+            position: absolute;
+            right: 100px;
+            bottom: 100px;
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            border: 0;
+            appearance: none;
+            background: rgba(0, 0, 0, 0.01);
+            cursor: nwse-resize;
+            touch-action: none;
+        }
+
+        .scribble-item[data-scribble="aqua"] .resize-handle {
+            right: 50px;
+            bottom: 50px;
+        }
+
+        .resize-handle::after {
+            content: "";
+            position: absolute;
+            inset: 4px;
+            width: 12px;
+            height: 12px;
+            background: repeating-linear-gradient(
+                135deg,
+                transparent 0 3px,
+                rgba(0, 0, 0, 0.45) 3px 4px
+            );
+            opacity: 0.55;
+        }
+
+        .resize-handle:hover::after {
+            opacity: 1;
+        }
+
+    </style>
+</head>
+<body>
+    <nav class="home-links" aria-label="Silly Bandz pages">
+        <a href="sillybandzhome.html">silly bandz home</a>
+        <a href="ogbandz.html">og bandz</a>
+        <a href="handbandz.html">hand bandz</a>
+        <a href="kevinjamesbandz.html">kevin james bandz</a>
+        <a href="scribblebandz.html" aria-current="page">scribble bandz</a>
+        <a href="memebandz.html">meme bandz</a>
+    </nav>
+
+    <img class="scribble" src="scribbles/aqua scribble.PNG" alt="aqua bandz" draggable="false">
+    <img class="scribble" src="scribbles/blue scribble.PNG" alt="blue bandz" draggable="false">
+    <img class="scribble" src="scribbles/green scribble.PNG" alt="green bandz" draggable="false">
+    <img class="scribble" src="scribbles/lime green scribble.PNG" alt="lime green bandz" draggable="false">
+    <img class="scribble" src="scribbles/orange scribble.PNG" alt="orange bandz" draggable="false">
+    <img class="scribble" src="scribbles/other red scribble.PNG" alt="other red bandz" draggable="false">
+    <img class="scribble" src="scribbles/pink scribble.PNG" alt="pink bandz" draggable="false">
+    <img class="scribble" src="scribbles/purple scribble.PNG" alt="purple bandz" draggable="false">
+    <img class="scribble" src="scribbles/red scribble.PNG" alt="red bandz" draggable="false">
+    <img class="scribble" src="scribbles/yellow scribble.PNG" alt="yellow bandz" draggable="false">
+
+    <script>
+        document.querySelectorAll(".scribble").forEach(image => {
+            const item = document.createElement("div");
+            item.className = "scribble-item";
+            item.dataset.scribble = image.alt.replace(" bandz", "");
+            image.before(item);
+            item.appendChild(image);
+
+            function placeRandomly() {
+                const maxX = Math.max(0, window.innerWidth - item.offsetWidth);
+                const maxY = Math.max(0, window.innerHeight - item.offsetHeight);
+                item.style.left = `${Math.random() * maxX}px`;
+                item.style.top = `${Math.random() * maxY}px`;
+            }
+
+            if (image.complete) {
+                placeRandomly();
+            } else {
+                image.addEventListener("load", placeRandomly, { once: true });
+            }
+
+            const handle = document.createElement("button");
+            handle.className = "resize-handle";
+            handle.type = "button";
+            handle.setAttribute("aria-label", `Resize ${image.alt}`);
+            item.appendChild(handle);
+
+            item.addEventListener("pointerdown", event => {
+                if (event.button !== 0 || event.target !== image) return;
+                event.preventDefault();
+                const startX = event.clientX;
+                const startY = event.clientY;
+                const startLeft = item.offsetLeft;
+                const startTop = item.offsetTop;
+                item.setPointerCapture(event.pointerId);
+                item.classList.add("is-dragging");
+
+                function moveItem(moveEvent) {
+                    if (!item.hasPointerCapture(moveEvent.pointerId)) return;
+                    const maxX = Math.max(0, window.innerWidth - item.offsetWidth);
+                    const maxY = Math.max(0, window.innerHeight - item.offsetHeight);
+                    item.style.left = `${Math.max(0, Math.min(maxX, startLeft + moveEvent.clientX - startX))}px`;
+                    item.style.top = `${Math.max(0, Math.min(maxY, startTop + moveEvent.clientY - startY))}px`;
+                }
+
+                item.addEventListener("pointermove", moveItem);
+                item.addEventListener("pointerup", function stopMove(upEvent) {
+                    if (item.hasPointerCapture(upEvent.pointerId)) {
+                        item.releasePointerCapture(upEvent.pointerId);
+                    }
+                    item.classList.remove("is-dragging");
+                    item.removeEventListener("pointermove", moveItem);
+                    item.removeEventListener("pointerup", stopMove);
+                });
+            });
+
+            handle.addEventListener("pointerdown", event => {
+                if (event.button !== 0) return;
+                event.preventDefault();
+                event.stopPropagation();
+                const startX = event.clientX;
+                const startY = event.clientY;
+                const startWidth = item.offsetWidth;
+                const startHeight = item.offsetHeight;
+                handle.setPointerCapture(event.pointerId);
+
+                function resizeItem(moveEvent) {
+                    if (!handle.hasPointerCapture(moveEvent.pointerId)) return;
+                    const maxWidth = Math.max(100, window.innerWidth - item.offsetLeft);
+                    const maxHeight = Math.max(100, window.innerHeight - item.offsetTop);
+                    item.style.width = `${Math.max(100, Math.min(maxWidth, startWidth + moveEvent.clientX - startX))}px`;
+                    item.style.height = `${Math.max(100, Math.min(maxHeight, startHeight + moveEvent.clientY - startY))}px`;
+                }
+
+                handle.addEventListener("pointermove", resizeItem);
+                handle.addEventListener("pointerup", function stopResize(upEvent) {
+                    if (handle.hasPointerCapture(upEvent.pointerId)) {
+                        handle.releasePointerCapture(upEvent.pointerId);
+                    }
+                    handle.removeEventListener("pointermove", resizeItem);
+                    handle.removeEventListener("pointerup", stopResize);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
