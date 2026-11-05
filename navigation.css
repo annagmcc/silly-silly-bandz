@@ -1,0 +1,45 @@
+.home-links {
+    position: fixed;
+    z-index: 3;
+    top: 1rem;
+    left: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.home-links a {
+    color: white;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 0.5rem 0.75rem;
+    font: 14px sans-serif;
+    text-decoration: none;
+}
+
+.home-links a[aria-current="page"] {
+    color: black;
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.home-links a[aria-current="page"].active-inverse {
+    color: white;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.home-links a:hover,
+.home-links a:focus-visible {
+    background: #333;
+}
+
+@media (max-width: 600px) {
+    .home-links {
+        gap: 0.25rem;
+        top: 0.5rem;
+        left: 0.5rem;
+    }
+
+    .home-links a {
+        padding: 0.4rem 0.5rem;
+        font-size: 12px;
+    }
+}

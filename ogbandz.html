@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OG Bandz</title>
+    <link rel="stylesheet" href="navigation.css">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            overflow: hidden;
+            background: #151413;
+            color: white;
+            font-family: sans-serif;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            z-index: 0;
+            inset: 0;
+            background: url("bandz bg/sillybandzonline3.jpeg") center / cover no-repeat;
+            opacity: 0.25;
+            pointer-events: none;
+        }
+
+        .trail-stage {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+        }
+
+        .content__img {
+            position: fixed;
+            z-index: 2;
+            top: 0;
+            left: 0;
+            width: clamp(180px, 32vw, 360px);
+            max-height: 360px;
+            object-fit: contain;
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0.7);
+        }
+
+        .content__img.is-active {
+            animation: image-trail 850ms ease-out forwards;
+        }
+
+        @keyframes image-trail {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.7) rotate(-8deg);
+            }
+            12% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1.15) rotate(8deg);
+            }
+        }
+    </style>
+</head>
+<body class="demo-2">
+    <nav class="home-links" aria-label="Silly Bandz pages">
+        <a href="sillybandzhome.html">silly bandz home</a>
+        <a href="ogbandz.html" aria-current="page">og bandz</a>
+        <a href="handbandz.html">hand bandz</a>
+        <a href="kevinjamesbandz.html">kevin james bandz</a>
+        <a href="scribblebandz.html">scribble bandz</a>
+        <a href="memebandz.html">meme bandz</a>
+    </nav>
+
+    <main class="trail-stage">
+        <div class="content" aria-label="Move your cursor to see an OG Bandz image trail">
+            <img class="content__img" src="og bandz/blue duck.png" alt="blue duck" />
+            <img class="content__img" src="og bandz/dolphin.png" alt="dolphin" />
+            <img class="content__img" src="og bandz/flamingo.png" alt="flamingo" />
+            <img class="content__img" src="og bandz/mermaid.png" alt="mermaid" />
+            <img class="content__img" src="og bandz/orange fish.png" alt="orange fish" />
+            <img class="content__img" src="og bandz/pig.png" alt="pig" />
+            <img class="content__img" src="og bandz/purple fish.png" alt="purple fish" />
+            <img class="content__img" src="g bandz/red penguin.png" alt="red penguin" />
+            <img class="content__img" src="og bandz/rock on.png" alt="rock on" />
+            <img class="content__img" src="og bandz/seahorse.png" alt="seahorse" />
+            <img class="content__img" src="og bandz/star.png" alt="star" />
+            <img class="content__img" src="og bandz/t rex.png" alt="t rex" />
+            <img class="content__img" src="og bandz/unicorn.png" alt="unicorn" />
+        </div>
+    </main>
+    <script>
+        const trailImages = [...document.querySelectorAll(".content__img")];
+        let nextImage = 0;
+        let previousX = null;
+        let previousY = null;
+
+        document.addEventListener("pointermove", event => {
+            if (previousX !== null && Math.hypot(event.clientX - previousX, event.clientY - previousY) < 55) {
+                return;
+            }
+
+            const image = trailImages[nextImage];
+            image.style.left = `${event.clientX}px`;
+            image.style.top = `${event.clientY}px`;
+            image.classList.remove("is-active");
+            void image.offsetWidth;
+            image.classList.add("is-active");
+
+            nextImage = (nextImage + 1) % trailImages.length;
+            previousX = event.clientX;
+            previousY = event.clientY;
+        });
+    </script>
+</body>
+</html>
